@@ -22,19 +22,19 @@ export default function PromptInput({
           handleMessageAdd({ versionId, prompt });
         }}
       >
-        <div className="flex w-full items-end gap-8">
-          <div className="">
+        <div className="w-full grid grid-cols-8 items-center gap-4">
+          <div className="col-span-7">
             <textarea
-              className="textarea textarea-primary m-0"
+              className="textarea textarea-primary m-0 w-full"
               placeholder="What will you like to do today"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             ></textarea>
           </div>
-          <div>
+          <div className='col-span-1'>
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary btn-block"
               disabled={!prompt}
             >
               Submit

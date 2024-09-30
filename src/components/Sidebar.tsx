@@ -25,7 +25,7 @@ export default function Sidebar({
   }
 
   return (
-    <div className="border bottom-1 border-primary p-4">
+    <div className="border bottom-1 border-primary p-4 bg-black text-white">
       {topics?.map((topic: TopicType) => {
         return (
           <div key={topic.id}>
