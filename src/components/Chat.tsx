@@ -1,6 +1,5 @@
 "use client";
 
-//import langchain here
 import { useState, useEffect } from "react";
 
 import PromptInput from "./PromptInput";
@@ -15,7 +14,7 @@ import Header from "./Header";
 
 export default function Chat() {
   const [topics, setTopics] = useState<Array<TopicType>>([]);
-  const [model, setModel] = useState<ChatModel>("gpt-3.5-turbo")
+  const [model, setModel] = useState<ChatModel>("gpt-3.5-turbo");
   const [currentVersion, setCurrentVersion] = useState<VersionType>();
   const [messages, setMessages] = useState<Array<MessageType>>([]);
   const [respLoading, setRespLoading] = useState<boolean>(false);
@@ -76,7 +75,7 @@ export default function Chat() {
     versionId?: string;
   }) {
     if (!versionId) {
-      // No versionId means 
+      // No versionId means
       try {
         openai.chat.completions
           .create({
@@ -86,10 +85,11 @@ export default function Chat() {
           .then(async (d) => {
             console.log(d);
             const { data, error } = await supabase.rpc("startConvo", {
-              versionId: currentVersion?.id,
               message: d,
+              userId: "userId gotten from localStorage",
             });
           })
+          // update state here if now error exists
           .catch((error) => {
             console.log(error, "error getting result");
           });
@@ -97,7 +97,32 @@ export default function Chat() {
         setError({ error: true, body: e });
       }
     } else {
-      
+      // If version Id exists then we continue a conversation
+      // Fetch last four exchanges with openApi and submit alongside new message/prompt
+      try {
+        openai.chat.completions
+          .create({
+            messages: [
+              ...sanitize(messages.slice(-2)),
+              { content: prompt, role: "user" },
+            ],
+            model,
+          })
+          .then(async (d) => {
+            console.log(d);
+            const { data, error } = await supabase.rpc("addMessage", {
+              versionId: currentVersion?.id,
+              message: d,
+              userId: "userId gotten from localStorage",
+            });
+            // update state here with data to reflect backend
+          })
+          .catch((error) => {
+            console.log(error, "error getting result");
+          });
+      } catch (e) {
+        setError({ error: true, body: e });
+      }
     }
   }
 
