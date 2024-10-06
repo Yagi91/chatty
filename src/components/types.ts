@@ -13,9 +13,7 @@ export type VersionType = {
 };
 
 export type TopicType = {
-  id: string;
-  title: string;
-  created_at: string;
-  user: string;
-  versions: Array<VersionType>;
+  id: string, 
+  created_at: string,
+  title:string,
 };

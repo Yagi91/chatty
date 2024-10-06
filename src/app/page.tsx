@@ -1,11 +1,5 @@
 "use client";
-
-import Chat from "@/components/Chat";
+import Main from "@/components/Main";
 export default function Home() {
-  return (
-    <>
-      
-      <Chat />;
-    </>
-  );
+  return <Main />;
 }

@@ -14,9 +14,5 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('@tailwindcss/typography'),require('daisyui')],
-  daisyui:{
-    themes: ['corporate'],
-  }
 };
 export default config;

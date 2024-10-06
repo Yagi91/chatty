@@ -24,4 +24,8 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .toggleSidebar{
+    @apply md:w-80 max-md:translate-x-full 
+  }
+ 
 }
