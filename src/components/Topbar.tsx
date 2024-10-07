@@ -6,7 +6,7 @@ export default function Topbar({
   toggleSidebar: () => void;
 }) {
   return (
-    <div className="flex p-4 items-center justify-between">
+    <div className="flex p-4 items-center justify-between border border-zinc-800">
       <div className="md:hidden">
         <span className="sr-only">Open Sidebar</span>
         <button onClick={() => toggleSidebar()}>

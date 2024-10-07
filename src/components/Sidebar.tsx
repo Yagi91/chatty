@@ -63,7 +63,7 @@ const Sidebar = forwardRef<
     >
       <nav
         aria-label="Chat History"
-        className="bg-zinc-950 text-zinc-300 px-5 py-4 h-screen max-h-screen space-y-7 overflow-scroll"
+        className="bg-zinc-950 text-zinc-300 px-5 py-4 h-screen max-h-screen space-y-7 overflow-y-scroll"
       >
         <div className="flex justify-between items-center">
           <button onClick={() => toggleSidebar()}>

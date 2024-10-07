@@ -89,12 +89,12 @@ export default function Main() {
         topicsLoading={topicsLoading}
       />
       <div className="w-full">
-        <main className="relative h-screen flex flex-col max-h-screen bg-zinc-900 px-6">
+        <main className="relative h-screen flex flex-col max-h-screen bg-zinc-900">
           <Topbar
             toggleSidebar={toggleSidebar}
             isSidebarClosed={isSidebarClosed}
           />
-          <div className="flex px-4 flex-col relative  justify-center w-full grow max-w-4xl mx-auto overflow-y-scroll">
+          <div className="flex px-4 flex-col relative justify-center w-full grow max-w-4xl mx-auto overflow-y-hidden">
             <Conversation />
             <PromptForm
               isNewChat={isNewChat}

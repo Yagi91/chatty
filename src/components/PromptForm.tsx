@@ -107,7 +107,9 @@ export default function PromptForm({
     <form
       onSubmit={submitPrompt}
       className={
-        !isNewChat ? "absolute w-full left-0 bottom-0 px-4" : "justify-center"
+        !isNewChat
+          ? "absolute w-full left-0 bottom-0 px-4"
+          : "justify-center grow-0"
       }
     >
       <div className={!isNewChat ? "max-w-4xl mx-auto" : ""}>
@@ -150,7 +152,7 @@ export default function PromptForm({
                   onChange={handleTextChange}
                   ref={textAreaRef}
                   rows={1}
-                  className="block bg-zinc-800 text-zinc-300 placeholder:text-zinc-400 px-16 py-4 rounded-full w-full"
+                  className="block bg-zinc-800 text-zinc-300 placeholder:text-zinc-400 px-16 py-4 mt-10 rounded-full w-full"
                   placeholder="Message Chatty"
                 ></textarea>
               </div>
