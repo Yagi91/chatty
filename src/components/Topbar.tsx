@@ -1,7 +1,11 @@
+import { Dispatch, SetStateAction } from "react";
+
 export default function Topbar({
   toggleSidebar,
   isSidebarClosed,
+  startNewConv,
 }: {
+  startNewConv: () => void;
   isSidebarClosed: boolean;
   toggleSidebar: () => void;
 }) {
@@ -52,7 +56,7 @@ export default function Topbar({
                 ></path>
               </svg>
             </button>
-            <button>
+            <button onClick={() => startNewConv()}>
               <svg
                 width="24"
                 height="24"

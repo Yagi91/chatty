@@ -17,13 +17,19 @@ export default function Main() {
     useState<Array<MessageType>>();
   const [lastActiveMessage, setLastActiveMessage] = useState<MessageType>();
   const [activeTopicId, setActiveTopicId] = useState<string>();
-
   /* Manages the prompt for textarea, higher up the component chain to facilitate 
   management of threads and parent messages */
   const [prompt, setPrompt] = useState<string>("");
 
   // state managing userid
   const [userId, setUserId] = useState<string | null>(null);
+
+  function startNewConv() {
+    setActiveTopicThread(undefined);
+    setLastActiveMessage(undefined);
+    setActiveTopicId(undefined);
+    setIsNewChat(false);
+  }
 
   useEffect(() => {
     // fetch topics
@@ -89,15 +95,18 @@ export default function Main() {
   return (
     <div className="flex">
       <Sidebar
+        startNewConv={startNewConv}
         ref={SidebarContainerRef}
         topics={topics}
         toggleSidebar={toggleSidebar}
         loadThread={loadThread}
         topicsLoading={topicsLoading}
+        activeTopicId={activeTopicId}
       />
       <div className="w-full">
         <main className="relative h-screen flex flex-col max-h-screen bg-zinc-900">
           <Topbar
+            startNewConv={startNewConv}
             toggleSidebar={toggleSidebar}
             isSidebarClosed={isSidebarClosed}
           />
