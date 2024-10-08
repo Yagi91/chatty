@@ -18,10 +18,18 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+
+  scroll-behavior: smooth;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  .toggleSidebar{
+    @apply md:w-80 max-md:translate-x-full 
+  }
+ 
 }
+
+
