@@ -1,15 +1,9 @@
 import { useState, useRef, Dispatch, SetStateAction, ReactNode } from "react";
-
-type messageType = {
-  message_id: string;
-  prompt: string;
-  message: string;
-  created_at: string;
-  children: Array<messageType>;
-};
+import type { MessageType } from "./types";
+import { editMessage } from "@/utils/messageUtils";
 
 // Example data structure
-const data = [
+let data = [
   {
     message_id: "afeeec33-da3c-44aa-a952-7f707431781c",
     prompt: "Hi",
@@ -78,12 +72,19 @@ const ChatComponent = ({
   level = 0,
   path,
   updatePath,
+  setLastActiveMessage,
+  activeTopicId,
 }: {
-  messages: Array<messageType>;
+  activeTopicId: string | undefined;
+  setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
+  messages: Array<MessageType> | undefined;
   level?: number;
   path: Array<number>;
   updatePath: Dispatch<SetStateAction<Array<number>>>;
 }) => {
+  if (messages == undefined || messages.length === 0) {
+    return null;
+  }
   const handleSiblingSwitch = (siblingIndex: number, currentLevel: number) => {
     const newPath = [...path];
     newPath[currentLevel] = siblingIndex; // Update path from the current level
@@ -93,7 +94,7 @@ const ChatComponent = ({
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Get the current message based on the path for this level
-  const currentMessage = messages[path[level]];
+  let currentMessage = messages[path[level]];
 
   if (!currentMessage) {
     const newPath = [...path];
@@ -101,10 +102,11 @@ const ChatComponent = ({
     updatePath(newPath);
     return null; // If undefined, return nothing to prevent errors
   }
-
+  setLastActiveMessage(currentMessage);
   return (
     <div className="space-y-4 my-4 grow ">
       <PromptBody
+        activeTopicId={activeTopicId}
         id={currentMessage.message_id}
         message={currentMessage.prompt}
       >
@@ -175,6 +177,8 @@ const ChatComponent = ({
 
       {currentMessage.children?.length > 0 && (
         <ChatComponent
+          activeTopicId={activeTopicId}
+          setLastActiveMessage={setLastActiveMessage}
           messages={currentMessage.children} // Pass the children of the current message
           level={level + 1}
           path={path}
@@ -185,11 +189,25 @@ const ChatComponent = ({
   );
 };
 
-export default function Conversation() {
+export default function Conversation({
+  setLastActiveMessage,
+  activeTopicId,
+  data,
+}: {
+  data: Array<MessageType> | undefined;
+  activeTopicId: string | undefined;
+  setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
+}) {
   const [path, setPath] = useState([0]);
   return (
     <div className="overflow-y-scroll">
-      <ChatComponent messages={data} path={path} updatePath={setPath} />;
+      <ChatComponent
+        activeTopicId={activeTopicId}
+        setLastActiveMessage={setLastActiveMessage}
+        messages={data}
+        path={path}
+        updatePath={setPath}
+      />
     </div>
   );
 }
@@ -207,7 +225,9 @@ function PromptBody({
   message,
   id,
   children,
+  activeTopicId,
 }: {
+  activeTopicId: string | undefined;
   message: string;
   id: string;
   children: ReactNode;
@@ -216,10 +236,15 @@ function PromptBody({
   const [update, handleChange] = useState<string>(message);
 
   const editButtonRef = useRef<HTMLButtonElement>(null);
-
+  const handleEdit = async () => {
+    if (update && activeTopicId) {
+      await editMessage(update, id, activeTopicId);
+    }
+  };
   if (edit) {
     return (
       <div className="relative mt-20">
+        <form onSubmit={() => handleEdit}></form>
         <textarea
           rows={3}
           className="block bg-zinc-700 rounded-3xl text-zinc-300 placeholder:text-zinc-400 px-8 pt-4 pb-14 w-full"

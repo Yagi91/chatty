@@ -4,7 +4,8 @@ import Conversation from "./Conversation";
 import Sidebar from "./Sidebar";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { TopicType } from "./types";
+import type { MessageType, TopicType } from "./types";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Main() {
   const [isSidebarClosed, setCloseSidebar] = useState<boolean>(true);
@@ -12,22 +13,17 @@ export default function Main() {
   const [isNewChat, setIsNewChat] = useState<boolean>(true);
   const [topics, setTopics] = useState<Array<TopicType>>([]);
   const [topicsLoading, setTopicsLoading] = useState<boolean>(false);
-
-  /* Maintains the current active chatId in the conversation panel, with navigations on the side to support
-  across siblings. On change a useEffect shoudl fire to update the conversation panel */
-  const [activeChatId, setActiveChatId] = useState<{}>({});
+  const [activeTopicThread, setActiveTopicThread] =
+    useState<Array<MessageType>>();
+  const [lastActiveMessage, setLastActiveMessage] = useState<MessageType>();
+  const [activeTopicId, setActiveTopicId] = useState<string>();
 
   /* Manages the prompt for textarea, higher up the component chain to facilitate 
   management of threads and parent messages */
   const [prompt, setPrompt] = useState<string>("");
 
-  // Parents are the parent messages used to populate the sidebar
-  // They are passed into categorize in the sidebar component to categorize them according to date
-  const [parents, setParents] = useState<Array<string>>([]);
-
-  useEffect(() => {
-    //Fetch the active chat
-  }, [activeChatId]);
+  // state managing userid
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     // fetch topics
@@ -49,7 +45,20 @@ export default function Main() {
         setTopicsLoading(false);
       }
     }
+    // fetch topics with the userId gotten from local storage
     fetchTopics("73eab841-b700-41e5-91e7-fdbd531d0209");
+
+    // userid
+    let storedUserId = localStorage.getItem("userId");
+
+    if (!storedUserId) {
+      // If no UUID exists, generate a new one and store it
+      const newUserId = uuidv4();
+      localStorage.setItem("userId", newUserId);
+      storedUserId = newUserId;
+    }
+    // Update the component state with the UUID
+    setUserId(storedUserId);
   }, []);
 
   const loadThread = async (topicId: string) => {
@@ -58,17 +67,15 @@ export default function Main() {
         "get_message_thread_by_topic",
         { topic_uuid: topicId }
       );
-      console.log(data);
+      if (error) {
+        console.log(error);
+      }
+      setActiveTopicId(topicId);
       setIsNewChat(false);
+      setActiveTopicThread(data);
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const addExchange = () => {
-    // Adds a prompt-exchange to conversation view
-    // Onsuccess should remove the new Chat view
-    setIsNewChat(false);
   };
 
   const toggleSidebar = () => {
@@ -95,8 +102,15 @@ export default function Main() {
             isSidebarClosed={isSidebarClosed}
           />
           <div className="flex px-4 flex-col relative justify-center w-full grow max-w-4xl mx-auto overflow-y-hidden">
-            <Conversation />
+            <Conversation
+              data={activeTopicThread}
+              activeTopicId={activeTopicId}
+              setLastActiveMessage={setLastActiveMessage}
+            />
             <PromptForm
+              activeTopicId={activeTopicId}
+              userId={userId}
+              lastActiveMessage={lastActiveMessage}
               isNewChat={isNewChat}
               prompt={prompt}
               setPrompt={setPrompt}

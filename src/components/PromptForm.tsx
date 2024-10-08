@@ -5,38 +5,33 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
+import { MessageType } from "./types";
+import { addExchange } from "@/utils/messageUtils";
 
 export default function PromptForm({
   isNewChat,
   prompt,
+  lastActiveMessage,
   setPrompt,
+  userId,
+  activeTopicId,
 }: {
+  activeTopicId: string | undefined;
   isNewChat: boolean;
+  userId: string | null;
   prompt: string;
+  lastActiveMessage: MessageType | undefined;
   setPrompt: Dispatch<SetStateAction<string>>;
 }) {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    const kbdElem = textAreaRef.current;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (kbdElem) {
-        if (e.key === "Enter" && !e.shiftKey && kbdElem.form) {
-          e.preventDefault();
-          kbdElem.form.submit();
-        }
-      }
-    };
-
-    textAreaRef.current?.addEventListener("keydown", handleKeyDown);
-    return () =>
-      textAreaRef.current?.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  async function submitPrompt(): Promise<void> {
+  async function submitPrompt(
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    e.preventDefault();
     if (!prompt) {
-    } else {
-      (await 2) + 2;
+    } else if (prompt && userId) {
+      await addExchange(prompt, userId, activeTopicId, lastActiveMessage);
     }
   }
 
@@ -105,7 +100,7 @@ export default function PromptForm({
 
   return (
     <form
-      onSubmit={submitPrompt}
+      onSubmit={(e) => submitPrompt(e)}
       className={
         !isNewChat
           ? "absolute w-full left-0 bottom-0 px-4"
@@ -125,7 +120,7 @@ export default function PromptForm({
               <div className="absolute">
                 <div className="absolute left-2 top-1 text-sm">
                   <button
-                    type="submit"
+                    type="button"
                     className="text-zinc-300 rounded-full border-0 bg-transparent p-3"
                   >
                     <span>
@@ -150,7 +145,6 @@ export default function PromptForm({
               <div>
                 <textarea
                   onChange={handleTextChange}
-                  ref={textAreaRef}
                   rows={1}
                   className="block bg-zinc-800 text-zinc-300 placeholder:text-zinc-400 px-16 py-4 mt-10 rounded-full w-full"
                   placeholder="Message Chatty"
