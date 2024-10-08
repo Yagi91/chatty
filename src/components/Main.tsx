@@ -52,8 +52,6 @@ export default function Main() {
         setTopicsLoading(false);
       }
     }
-    // fetch topics with the userId gotten from local storage
-    fetchTopics("73eab841-b700-41e5-91e7-fdbd531d0209");
 
     // userid
     let storedUserId = localStorage.getItem("userId");
@@ -66,6 +64,9 @@ export default function Main() {
     }
     // Update the component state with the UUID
     setUserId(storedUserId);
+
+    // fetch topics with the userId gotten from local storage
+    fetchTopics("73eab841-b700-41e5-91e7-fdbd531d0209");
   }, [rv]);
 
   const loadThread = async (topicId: string) => {
