@@ -10,7 +10,7 @@ export default function sanitize(messages: Array<MessageType> | undefined) {
   const sanitizeArr: Array<ChatCompletionMessageParam> = [];
   for (let i = 0; i < messages.length; i++) {
     const user = messages[0].prompt;
-    const assistant = messages[0].response;
+    const assistant = messages[0].message;
     sanitizeArr.push(
       { content: user, role: "user", name },
       { content: assistant, role: "assistant", name: "machine" }
