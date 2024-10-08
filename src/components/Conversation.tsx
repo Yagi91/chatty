@@ -1,9 +1,16 @@
-import { useState, useRef, Dispatch, SetStateAction, ReactNode } from "react";
+import {
+  useState,
+  useRef,
+  Dispatch,
+  SetStateAction,
+  ReactNode,
+  FormEvent,
+} from "react";
 import type { MessageType } from "./types";
-import { editMessage } from "@/utils/messageUtils";
+import { editMessage, parentIdFinder } from "@/utils/messageUtils";
 
 // Example data structure
-let data = [
+let dataPH = [
   {
     message_id: "afeeec33-da3c-44aa-a952-7f707431781c",
     prompt: "Hi",
@@ -17,7 +24,7 @@ let data = [
         created_at: "2024-10-02T16:43:43.743008+00:00",
         children: [
           {
-            message_id: "a5758ae8-bd9e-4c7a-9f26-9004bc0cbe5b",
+            message_id: "poa5758ae8-bd9e-4c7a-9f26-9004bc0cbe5b",
             prompt: "Hi grandchild",
             message: "I'm doing great, thanks!",
             created_at: "2024-10-02T16:48:04.964597+00:00",
@@ -69,12 +76,14 @@ let data = [
 // Recursive ChatComponent to display prompts, responses, and children
 const ChatComponent = ({
   messages,
+  originalData,
   level = 0,
   path,
   updatePath,
   setLastActiveMessage,
   activeTopicId,
 }: {
+  originalData: Array<MessageType> | undefined;
   activeTopicId: string | undefined;
   setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
   messages: Array<MessageType> | undefined;
@@ -106,6 +115,9 @@ const ChatComponent = ({
   return (
     <div className="space-y-4 my-4 grow ">
       <PromptBody
+        originalData={originalData}
+        path={path}
+        level={level}
         activeTopicId={activeTopicId}
         id={currentMessage.message_id}
         message={currentMessage.prompt}
@@ -177,6 +189,7 @@ const ChatComponent = ({
 
       {currentMessage.children?.length > 0 && (
         <ChatComponent
+          originalData={originalData}
           activeTopicId={activeTopicId}
           setLastActiveMessage={setLastActiveMessage}
           messages={currentMessage.children} // Pass the children of the current message
@@ -189,28 +202,6 @@ const ChatComponent = ({
   );
 };
 
-export default function Conversation({
-  setLastActiveMessage,
-  activeTopicId,
-  data,
-}: {
-  data: Array<MessageType> | undefined;
-  activeTopicId: string | undefined;
-  setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
-}) {
-  const [path, setPath] = useState([0]);
-  return (
-    <div className="overflow-y-scroll">
-      <ChatComponent
-        activeTopicId={activeTopicId}
-        setLastActiveMessage={setLastActiveMessage}
-        messages={data}
-        path={path}
-        updatePath={setPath}
-      />
-    </div>
-  );
-}
 function ResponseBody({ response }: { response: string }) {
   return (
     <div className="relative">
@@ -226,7 +217,13 @@ function PromptBody({
   id,
   children,
   activeTopicId,
+  path,
+  level,
+  originalData,
 }: {
+  originalData: Array<MessageType> | undefined;
+  level: number;
+  path: Array<number>;
   activeTopicId: string | undefined;
   message: string;
   id: string;
@@ -234,38 +231,44 @@ function PromptBody({
 }) {
   const [edit, setEdit] = useState(false);
   const [update, handleChange] = useState<string>(message);
-
   const editButtonRef = useRef<HTMLButtonElement>(null);
-  const handleEdit = async () => {
+  const handleEdit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (update && activeTopicId) {
-      await editMessage(update, id, activeTopicId);
+      await editMessage(
+        update,
+        id,
+        activeTopicId,
+        parentIdFinder(originalData, path, level)
+      );
     }
   };
   if (edit) {
     return (
       <div className="relative mt-20">
-        <form onSubmit={() => handleEdit}></form>
-        <textarea
-          rows={3}
-          className="block bg-zinc-700 rounded-3xl text-zinc-300 placeholder:text-zinc-400 px-8 pt-4 pb-14 w-full"
-          value={update}
-          onChange={(e) => handleChange(e.target.value)}
-        ></textarea>
-        <div className="flex justify-end absolute inset-x-0 gap-4 bottom-4 px-4">
-          <button
-            className="border-0 py-2 px-4 rounded-full transition-colors ease-in-out duration-300 bg-zinc-900 hover:bg-zinc-950"
-            type="button"
-            onClick={() => setEdit(false)}
-          >
-            Cancel
-          </button>
-          <button
-            className="border-0 py-2 px-4 rounded-full transition-colors ease-in-out duration-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-900"
-            type="button"
-          >
-            Send
-          </button>
-        </div>
+        <form onSubmit={(e) => handleEdit(e)}>
+          <textarea
+            rows={3}
+            className="block bg-zinc-700 rounded-3xl text-zinc-300 placeholder:text-zinc-400 px-8 pt-4 pb-14 w-full"
+            value={update}
+            onChange={(e) => handleChange(e.target.value)}
+          ></textarea>
+          <div className="flex justify-end absolute inset-x-0 gap-4 bottom-4 px-4">
+            <button
+              className="border-0 py-2 px-4 rounded-full transition-colors ease-in-out duration-300 bg-zinc-900 hover:bg-zinc-950"
+              type="button"
+              onClick={() => setEdit(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="border-0 py-2 px-4 rounded-full transition-colors ease-in-out duration-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-900"
+              type="submit"
+            >
+              Send
+            </button>
+          </div>
+        </form>
       </div>
     );
   } else {
@@ -307,4 +310,28 @@ function PromptBody({
       </div>
     );
   }
+}
+
+export default function Conversation({
+  setLastActiveMessage,
+  activeTopicId,
+  data,
+}: {
+  data: Array<MessageType> | undefined;
+  activeTopicId: string | undefined;
+  setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
+}) {
+  const [path, setPath] = useState([0]);
+  return (
+    <div className="overflow-y-scroll py-20">
+      <ChatComponent
+        originalData={dataPH}
+        activeTopicId={activeTopicId}
+        setLastActiveMessage={setLastActiveMessage}
+        messages={dataPH}
+        path={path}
+        updatePath={setPath}
+      />
+    </div>
+  );
 }

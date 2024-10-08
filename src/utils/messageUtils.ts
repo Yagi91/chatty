@@ -20,10 +20,10 @@ export async function addExchange(
       });
       completion.choices;
       const { data, error } = await supabase.rpc("add_exchange", {
-        parent_id: lastMessage.message_id,
         prompt,
         topic_id: topicId,
         response: completion.choices[0].message,
+        parent_thread_id: lastMessage.message_id,
       });
       if (error) {
         throw error;
@@ -58,8 +58,31 @@ export async function addExchange(
 export async function editMessage(
   edit: string,
   promptId: string,
-  topicId: string
+  topicId: string,
+  parentThreadId: string | null
 ) {
+  if (!parentThreadId) {
+    try {
+      let completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: edit }],
+      });
+      completion.choices;
+      const { data, error } = await supabase.rpc("edit_message", {
+        prompt,
+        response: completion.choices[0].message,
+        sibling_id: promptId,
+        topic_id: topicId,
+      });
+      if (error) {
+        throw error;
+      }
+      //
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
   try {
     let completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -70,7 +93,7 @@ export async function editMessage(
       prompt,
       response: completion.choices[0].message,
       sibling_id: promptId,
-      topic_id: topicId,
+      parent_thread_id: parentThreadId,
     });
     if (error) {
       throw error;
@@ -80,4 +103,22 @@ export async function editMessage(
   } catch (error) {
     console.log(error);
   }
+}
+
+export function parentIdFinder(
+  data: Array<MessageType> | undefined,
+  path: Array<number>,
+  level: number
+): string | null {
+  if (!data) {
+    return null;
+  }
+  path = path.slice(0, level);
+  let parentId = null;
+  console.log(path, level);
+  for (let i = 0; i < path.length; i++) {
+    parentId = data[path[i]].message_id;
+    data = data[path[i]].children;
+  }
+  return parentId;
 }
