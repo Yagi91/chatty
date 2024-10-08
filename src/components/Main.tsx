@@ -20,6 +20,7 @@ export default function Main() {
   /* Manages the prompt for textarea, higher up the component chain to facilitate 
   management of threads and parent messages */
   const [prompt, setPrompt] = useState<string>("");
+  const [rv, refresh] = useState<number>(Math.random);
 
   // state managing userid
   const [userId, setUserId] = useState<string | null>(null);
@@ -65,7 +66,7 @@ export default function Main() {
     }
     // Update the component state with the UUID
     setUserId(storedUserId);
-  }, []);
+  }, [rv]);
 
   const loadThread = async (topicId: string) => {
     try {
@@ -112,11 +113,13 @@ export default function Main() {
           />
           <div className="flex px-4 flex-col relative justify-center w-full grow max-w-4xl mx-auto overflow-y-hidden">
             <Conversation
+              refresh={refresh}
               data={activeTopicThread}
               activeTopicId={activeTopicId}
               setLastActiveMessage={setLastActiveMessage}
             />
             <PromptForm
+              refresh={refresh}
               activeTopicId={activeTopicId}
               userId={userId}
               lastActiveMessage={lastActiveMessage}

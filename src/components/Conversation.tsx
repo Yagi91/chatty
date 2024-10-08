@@ -82,7 +82,10 @@ const ChatComponent = ({
   updatePath,
   setLastActiveMessage,
   activeTopicId,
+  refresh,
 }: {
+  refresh: Dispatch<SetStateAction<number>>;
+
   originalData: Array<MessageType> | undefined;
   activeTopicId: string | undefined;
   setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
@@ -115,6 +118,7 @@ const ChatComponent = ({
   return (
     <div className="space-y-4 my-4 grow ">
       <PromptBody
+        refresh={refresh}
         originalData={originalData}
         path={path}
         level={level}
@@ -185,10 +189,11 @@ const ChatComponent = ({
         )}
       </PromptBody>
 
-      <ResponseBody response={currentMessage.message} />
+      <ResponseBody response={currentMessage.response} />
 
       {currentMessage.children?.length > 0 && (
         <ChatComponent
+          refresh={refresh}
           originalData={originalData}
           activeTopicId={activeTopicId}
           setLastActiveMessage={setLastActiveMessage}
@@ -220,7 +225,10 @@ function PromptBody({
   path,
   level,
   originalData,
+  refresh,
 }: {
+  refresh: Dispatch<SetStateAction<number>>;
+
   originalData: Array<MessageType> | undefined;
   level: number;
   path: Array<number>;
@@ -241,6 +249,7 @@ function PromptBody({
         activeTopicId,
         parentIdFinder(originalData, path, level)
       );
+      refresh(Math.random());
     }
   };
   if (edit) {
@@ -316,7 +325,9 @@ export default function Conversation({
   setLastActiveMessage,
   activeTopicId,
   data,
+  refresh,
 }: {
+  refresh: Dispatch<SetStateAction<number>>;
   data: Array<MessageType> | undefined;
   activeTopicId: string | undefined;
   setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
@@ -325,10 +336,11 @@ export default function Conversation({
   return (
     <div className="overflow-y-scroll py-20">
       <ChatComponent
-        originalData={dataPH}
+        refresh={refresh}
+        originalData={data}
         activeTopicId={activeTopicId}
         setLastActiveMessage={setLastActiveMessage}
-        messages={dataPH}
+        messages={data}
         path={path}
         updatePath={setPath}
       />

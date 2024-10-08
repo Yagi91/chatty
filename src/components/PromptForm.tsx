@@ -15,7 +15,10 @@ export default function PromptForm({
   setPrompt,
   userId,
   activeTopicId,
+  refresh,
 }: {
+  refresh: Dispatch<SetStateAction<number>>;
+
   activeTopicId: string | undefined;
   isNewChat: boolean;
   userId: string | null;
@@ -23,8 +26,6 @@ export default function PromptForm({
   lastActiveMessage: MessageType | undefined;
   setPrompt: Dispatch<SetStateAction<string>>;
 }) {
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-
   async function submitPrompt(
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> {
@@ -32,6 +33,7 @@ export default function PromptForm({
     if (!prompt) {
     } else if (prompt && userId) {
       await addExchange(prompt, userId, activeTopicId, lastActiveMessage);
+      refresh(Math.random());
     }
   }
 

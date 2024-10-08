@@ -14,7 +14,7 @@ export async function addExchange(
         model: "gpt-4o-mini",
         messages: [
           { role: "user", content: lastMessage.prompt },
-          { role: "assistant", content: lastMessage.message },
+          { role: "assistant", content: lastMessage.response },
           { role: "user", content: prompt },
         ],
       });
@@ -61,28 +61,6 @@ export async function editMessage(
   topicId: string,
   parentThreadId: string | null
 ) {
-  if (!parentThreadId) {
-    try {
-      let completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: edit }],
-      });
-      completion.choices;
-      const { data, error } = await supabase.rpc("edit_message", {
-        prompt,
-        response: completion.choices[0].message,
-        sibling_id: promptId,
-        topic_id: topicId,
-      });
-      if (error) {
-        throw error;
-      }
-      //
-      console.log(data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
   try {
     let completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -93,7 +71,8 @@ export async function editMessage(
       prompt,
       response: completion.choices[0].message,
       sibling_id: promptId,
-      parent_thread_id: parentThreadId,
+      parent_thread_id: parentThreadId || null,
+      topic_id: topicId || null,
     });
     if (error) {
       throw error;
