@@ -6,7 +6,7 @@ import React, {
   SetStateAction,
 } from "react";
 import { MessageType } from "./types";
-import { addExchange } from "@/utils/messageUtils";
+import { addExchange, addExchangeGe } from "@/utils/messageUtils";
 
 export default function PromptForm({
   isNewChat,
@@ -16,6 +16,7 @@ export default function PromptForm({
   userId,
   activeTopicId,
   refresh,
+  loadThread,
 }: {
   refresh: Dispatch<SetStateAction<number>>;
 
@@ -25,6 +26,7 @@ export default function PromptForm({
   prompt: string;
   lastActiveMessage: MessageType | undefined;
   setPrompt: Dispatch<SetStateAction<string>>;
+  loadThread: (topicId: string) => Promise<void>;
 }) {
   async function submitPrompt(
     e: React.FormEvent<HTMLFormElement>
@@ -32,8 +34,15 @@ export default function PromptForm({
     e.preventDefault();
     if (!prompt) {
     } else if (prompt && userId) {
-      await addExchange(prompt, userId, activeTopicId, lastActiveMessage);
-      refresh(Math.random());
+      const data = await addExchangeGe(
+        prompt,
+        userId,
+        activeTopicId,
+        lastActiveMessage
+      );
+      // refresh(Math.random());
+      console.log(data);
+      loadThread(data.topic_id);
     }
   }
 

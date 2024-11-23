@@ -7,7 +7,11 @@ import {
   FormEvent,
 } from "react";
 import type { MessageType } from "./types";
-import { editMessage, parentIdFinder } from "@/utils/messageUtils";
+import {
+  editMessage,
+  editMessageGe,
+  parentIdFinder,
+} from "@/utils/messageUtils";
 
 // Example data structure
 let dataPH = [
@@ -243,7 +247,7 @@ function PromptBody({
   const handleEdit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (update && activeTopicId) {
-      await editMessage(
+      await editMessageGe(
         update,
         id,
         activeTopicId,

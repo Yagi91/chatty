@@ -21,6 +21,7 @@ export default function Main() {
   management of threads and parent messages */
   const [prompt, setPrompt] = useState<string>("");
   const [rv, refresh] = useState<number>(Math.random);
+  console.log(activeTopicThread);
 
   // state managing userid
   const [userId, setUserId] = useState<string | null>(null);
@@ -53,17 +54,17 @@ export default function Main() {
       }
     }
 
-    // userid
-    let storedUserId = localStorage.getItem("userId");
+    // // userid
+    // let storedUserId = localStorage.getItem("userId");
 
-    if (!storedUserId) {
-      // If no UUID exists, generate a new one and store it
-      const newUserId = uuidv4();
-      localStorage.setItem("userId", newUserId);
-      storedUserId = newUserId;
-    }
-    // Update the component state with the UUID
-    setUserId(storedUserId);
+    // if (!storedUserId) {
+    //   // If no UUID exists, generate a new one and store it
+    //   const newUserId = uuidv4();
+    //   localStorage.setItem("userId", newUserId);
+    //   storedUserId = newUserId;
+    // }
+    // // Update the component state with the UUID
+    setUserId(process.env.NEXT_PUBLIC_USER as string);
 
     // fetch topics with the userId gotten from local storage
     fetchTopics("73eab841-b700-41e5-91e7-fdbd531d0209");
@@ -73,7 +74,8 @@ export default function Main() {
     try {
       const { data, error } = await supabase.rpc(
         "get_message_thread_by_topic",
-        { topic_uuid: topicId }
+        { topic_uuid: topicId },
+        { count: "exact" }
       );
       if (error) {
         console.log(error);
@@ -120,6 +122,7 @@ export default function Main() {
               setLastActiveMessage={setLastActiveMessage}
             />
             <PromptForm
+              loadThread={loadThread}
               refresh={refresh}
               activeTopicId={activeTopicId}
               userId={userId}
