@@ -156,10 +156,10 @@ export async function editMessageGe(
     let { response } = await chat.sendMessage(edit);
     console.log(response);
     const { data, error } = await supabase.rpc("edit_message", {
-      prompt,
+      prompt: edit,
       response: response.text(),
       sibling_id: promptId,
-      parent_thread_id: parentThreadId || null,
+      thread_parent_id: parentThreadId || null,
       topic_id: topicId || null,
     });
     if (error) {

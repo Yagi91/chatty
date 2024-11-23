@@ -86,9 +86,9 @@ const ChatComponent = ({
   updatePath,
   setLastActiveMessage,
   activeTopicId,
-  refresh,
+  loadThread,
 }: {
-  refresh: Dispatch<SetStateAction<number>>;
+  loadThread: (topic_id: string) => Promise<void>;
 
   originalData: Array<MessageType> | undefined;
   activeTopicId: string | undefined;
@@ -122,7 +122,7 @@ const ChatComponent = ({
   return (
     <div className="space-y-4 my-4 grow ">
       <PromptBody
-        refresh={refresh}
+        loadThread={loadThread}
         originalData={originalData}
         path={path}
         level={level}
@@ -197,7 +197,7 @@ const ChatComponent = ({
 
       {currentMessage.children?.length > 0 && (
         <ChatComponent
-          refresh={refresh}
+          loadThread={loadThread}
           originalData={originalData}
           activeTopicId={activeTopicId}
           setLastActiveMessage={setLastActiveMessage}
@@ -229,9 +229,9 @@ function PromptBody({
   path,
   level,
   originalData,
-  refresh,
+  loadThread,
 }: {
-  refresh: Dispatch<SetStateAction<number>>;
+  loadThread: (topic_id: string) => void;
 
   originalData: Array<MessageType> | undefined;
   level: number;
@@ -247,13 +247,14 @@ function PromptBody({
   const handleEdit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (update && activeTopicId) {
-      await editMessageGe(
+      const { topic_id } = await editMessageGe(
         update,
         id,
         activeTopicId,
         parentIdFinder(originalData, path, level)
       );
-      refresh(Math.random());
+      loadThread(topic_id);
+      setEdit(false);
     }
   };
   if (edit) {
@@ -329,18 +330,19 @@ export default function Conversation({
   setLastActiveMessage,
   activeTopicId,
   data,
-  refresh,
+  loadThread,
 }: {
   refresh: Dispatch<SetStateAction<number>>;
   data: Array<MessageType> | undefined;
   activeTopicId: string | undefined;
   setLastActiveMessage: Dispatch<SetStateAction<MessageType | undefined>>;
+  loadThread: (topic_id: string) => Promise<void>;
 }) {
   const [path, setPath] = useState([0]);
   return (
     <div className="overflow-y-scroll py-20">
       <ChatComponent
-        refresh={refresh}
+        loadThread={loadThread}
         originalData={data}
         activeTopicId={activeTopicId}
         setLastActiveMessage={setLastActiveMessage}

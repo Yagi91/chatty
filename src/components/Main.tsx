@@ -116,6 +116,7 @@ export default function Main() {
           />
           <div className="flex px-4 flex-col relative justify-center w-full grow max-w-4xl mx-auto overflow-y-hidden">
             <Conversation
+              loadThread={loadThread}
               refresh={refresh}
               data={activeTopicThread}
               activeTopicId={activeTopicId}
